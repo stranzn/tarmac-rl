@@ -1,0 +1,9 @@
+
+#folders and dependencies
+__pycache__/
+.vscode/
+.venv/
+
+# training data
+car_ppo.zip
+
