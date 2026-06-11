@@ -406,16 +406,30 @@ class CarEnv(gym.Env):
             rot = pygame.transform.rotate(surf, -math.degrees(self.angle))
         self.screen.blit(rot, (car_sx - rot.get_width()//2, car_sy - rot.get_height()//2))
 
-        # HUD
+        # --- DRAW LOOKAHEAD DOTS ---
+        idx = self._nearest_track_idx()
+        n = len(self._tp)
+        # Offsets 5 (Red), 15 (Yellow), 30 (Green)
+        for offset, color in zip([5, 15, 30], [(255, 50, 50), (255, 255, 50), (50, 255, 50)]):
+            target_idx = (idx + offset) % n
+            tx, ty = self._tp[target_idx]
+            pt = ws((tx, ty))
+            pygame.draw.circle(self.screen, color, pt, 6)
+            pygame.draw.circle(self.screen, (0, 0, 0), pt, 6, 1) # Outline for visibility
+
+        # --- HUD ---
         if not hasattr(self, '_font'):
-            self._font = pygame.font.SysFont("monospace", 16)
+            self._font = pygame.font.SysFont("monospace", 16, bold=True)
         best_str = f"{self.best_lap_time:.2f}" if self.best_lap_time != float('inf') else "N/A"
+        
         self.screen.blit(self._font.render(
             f"speed: {self.speed:.1f}  step: {self._step_count}", True, (240,240,240)), (10,10))
         self.screen.blit(self._font.render(
             f"Lap Time: {self.current_lap_time:.2f}", True, (240,240,240)), (10,30))
         self.screen.blit(self._font.render(
             f"Best Lap: {best_str}", True, (240,240,240)), (10,50))
+        self.screen.blit(self._font.render(
+            f"Waypoint: {idx} / {n}", True, (0,200,255)), (10,70))
 
         pygame.display.flip()
         self.clock.tick(self.metadata["render_fps"])

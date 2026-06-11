@@ -6,4 +6,5 @@ __pycache__/
 
 # training data
 car_ppo.zip
+replays.npy
 
