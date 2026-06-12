@@ -1,8 +1,19 @@
 import argparse
 from stable_baselines3 import PPO
-from stable_baselines3.common.callbacks import CallbackList
+from stable_baselines3.common.callbacks import CallbackList, BaseCallback
 from car_env import CarEnv
 from replay_callback import ReplayCallback
+
+
+class RenderCallback(BaseCallback):
+    def __init__(self, env):
+        super().__init__()
+        self._env = env
+
+    def _on_step(self) -> bool:
+        self._env.render()
+        return True
+
 
 # initialises the environment and PPO model, then runs training
 def main(render_mode):
@@ -29,12 +40,14 @@ def main(render_mode):
     else:
         print("Training without GUI...\n")
 
-    callbacks = CallbackList([ReplayCallback()])
+    callbacks = [ReplayCallback()]
+    if render_mode == "human":
+        callbacks.append(RenderCallback(env))
 
     try:
         model.learn(
             total_timesteps=120_000,
-            callback=callbacks,
+            callback=CallbackList(callbacks),
         )
     except KeyboardInterrupt:
         print("\nTraining stopped manually.")
@@ -45,7 +58,6 @@ def main(render_mode):
         env.close()
 
     model.save("car_ppo")
-
     print("\n" + "=" * 50)
     print("TRAINING FINISHED SUCCESSFULLY!")
     print("Model saved as 'car_ppo'")
