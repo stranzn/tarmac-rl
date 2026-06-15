@@ -3,6 +3,7 @@ from stable_baselines3 import PPO
 from stable_baselines3.common.callbacks import CallbackList, BaseCallback
 from car_env import CarEnv
 from replay_callback import ReplayCallback
+import pygame
 
 
 class RenderCallback(BaseCallback):
@@ -12,6 +13,11 @@ class RenderCallback(BaseCallback):
 
     def _on_step(self) -> bool:
         self._env.render()
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                return False
+            if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
+                return False
         return True
 
 
